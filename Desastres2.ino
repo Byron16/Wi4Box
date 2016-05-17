@@ -9,13 +9,6 @@ DHT dht(DHTPIN, DHTTYPE);
 byte values[6] ;
 char output[512];
 
-int SensorHumo = A0;
-int NivelHumo = 0;
-int SensorLluvia = A1;
-int ValorLluvia = 0;
-int SensorSonido = 4;
-int EstadoSonido;
-int i=0;
 
 int ln=0;
 int lf=0;
@@ -37,10 +30,6 @@ LiquidCrystal lcd(7, 8, 9, 10, 11 , 12);
 
 void setup() {
   dht.begin();
-  pinMode(SensorLluvia,INPUT);
-  pinMode(ValorLluvia,OUTPUT);
-  pinMode(SensorSonido,INPUT);
-  
   Wire.begin();
   Serial.begin(9600);
 
@@ -69,130 +58,28 @@ void setup() {
 }
 
 void loop() {  
-  TemyHum();
-  Humo();
-  Lluvia();
-  Sonido();
-  Movimiento();
-  delay(1000);
-}
 
-void TemyHum(){
   int t=dht.readTemperature(); //float
- 
-  //sprintf(tyh,"T=%dC H=%d%%",t);
-  //Serial.println(tyh);
- if ((t<=12)&&(tf==0))
- {
-  Serial.println("R");
-  tf=1;
-  tc=0;
-  tt=0;
- }
-
-   if((t>13)&&(t<=25)&&(tc==0)){
-     Serial.println("T");
-     tf=0;
-     tc=1;
-     tt=0;
-   }
-   if((t>25)&&(tt==0))
-   {
-   Serial.println("C");
-   tt=1;
-   tf=0;
-   tc=0;
-   }
-   //Serial.println("C");
+  sprintf(tyh,"T=%dC H=%d%%",t);
+  Serial.println(tyh);
   lcd.setCursor(0,0);
   lcd.write(tyh);
-
-}
-
-void Humo(){
-  NivelHumo=analogRead(A0);
-  NivelHumo=map(NivelHumo,0,1023,0,100);
+  
+  
+  //
+  Nivel=analogRead(A0);
+  Nivel=map(NivelHumo,0,1023,0,100);
   lcd.setCursor(12,0);
-  if (NivelHumo>=50)
-  {
-    //Serial.println("Posible Incendio: "+String(NivelHumo)+"%");
-    Serial.println("I");
-    lcd.write("I=S");
-    //digitalwrite(13,HIGH);
-  }
-  /*else
-  {*/
-    //digitalWrite(13,LOW)
-    //Serial.println("Ningun Incendio: "+String(NivelHumo)+"%");
-    lcd.write("I=N");
-  //}
-
+  lcd.write("I=N");
   
-  
-}
-
-void Lluvia(){
-  ValorLluvia=analogRead(SensorLluvia);
-  ValorLluvia=map(ValorLluvia,0,1023,0,100);
+  //
+  Valor=analogRead(SensorLluvia);
+  Valor=map(ValorLluvia,0,1023,0,100);
   lcd.setCursor(0,1);
-  if((ValorLluvia>80)&&(ln==0))
-  {
-    //Serial.println("Seco: "+String(ValorLluvia));
-      Serial.println("N");
-      lcd.write("LL=N");
-      ln=1;
-      lf=0;
-      lt=0;
-  }
-  else
-  if (ValorLluvia>50 && ValorLluvia<=80)
-  { 
-    //Serial.println("Lluvia Fina: "+String(ValorLluvia));
-    if (lf==0){
-      Serial.println("L");
-      lcd.write("LL=S");
-      lf=1;
-      ln=0;
-      lt=0;
-    }
-  }
-  else
-  if (ValorLluvia<=50){
-    //Serial.println("LLuvia Fuerte: "+String(ValorLluvia));
-    if(lt==0){
-      Serial.println("F");
-      lcd.write("LL=F");
-      lt=1;
-      lf=0;
-      ln=0;
-    }
-  }
-}
-
-void Sonido(){
-  EstadoSonido=digitalRead(SensorSonido);
+  
+  EstadoSonido=digitalRead(Sensor);
     lcd.setCursor(5,1);
-  if(EstadoSonido==LOW)
-  {
-    i++;
-    if(i==40)
-    {
-      //Serial.println(" Posible tala de Arboles: "+String(i));
-      Serial.println("A");
-      lcd.write("TA=S");
-      i=0;
-    }
-  }
-/*  else
-  {
-      Serial.println("Ninguna Tala de Arboles: "+String(i));
-      lcd.write("TA=N");
-  }*/
-  //delay(2);
-}
 
-void Movimiento()
-{
   int xyzregister = 0x32;
   int x, y, z;
   
@@ -246,14 +133,4 @@ void Movimiento()
   //Serial.println("\n");
   lcd.setCursor(10,1);
   lcd.write("S=N");
-
-/*R=Frio
-T=templado
-C=calido
-I=incendio
-N=ninguna lluvia
-L=Lluvia fina
-F=lluvia fuerte
-A=tala de arboles
-S=sismo*/
 }
